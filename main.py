@@ -9,17 +9,27 @@ class Main:
         
         (x_train, y_train),(x_test, y_test) = mnist.load_data()
         
+        x_train = np.reshape(x_train, (-1, 28,28, 1))
+        x_test =  np.reshape(x_test, (-1, 28,28, 1))
+        
+        x_train = x_train.astype('float32')
+        x_test = x_test.astype('float32')
         #Scaling the MNIST data
         x_train, x_test = x_train / 255.0, x_test / 255.0
         
+#        train_Y_one_hot = to_categorical(y_train)
+#        test_Y_one_hot = to_categorical(y_test)
+#        
         return (x_train, y_train),(x_test, y_test)
         
         
     def trainTheModel(self,
                       x_train, 
-                      y_train):
+                      y_train, 
+                      x_test, 
+                      y_test):
         gnnm = Model()
-        gnnm.createModel(x_train, y_train)
+        gnnm.createModel(x_train, y_train, x_test, y_test)
         
     def plotImage(self, data, incorrect):
         
@@ -32,6 +42,7 @@ class Main:
             plt.axis('off')
             plt.tick_params(axis='both', left='off', top='off', right='off', bottom='off', labelleft='off', labeltop='off', labelright='off', labelbottom='off')
             plt.imshow(np.reshape(data[incorrect[i]], (28, 28)))
+            plt.margins(x = 1, y=10)
         plt.show()
         
         
@@ -39,22 +50,39 @@ class Main:
         
 main = Main()
 (x_train, y_train),(x_test, y_test) = main.readData()
-#main.trainTheModel(x_train, y_train)
+
+main.trainTheModel(x_train, y_train, x_test, y_test)
 
 model = Model().loadModel()
 
 ev = model.evaluate(x_test, y_test)
-loss, accuracy = ev[0], ev[1]
+predicted_classes = model.predict(x_test)
+predicted_classes = np.argmax(np.round(predicted_classes),axis=1)
+incorrect = np.where(predicted_classes != y_test)[0]
 
-image_size = (28, 28)
-y_pred = np.array([0] * (len(x_test)))
-incorrect = list()
-for i in range(len(x_test)):
-    y_pred[i] = (np.argmax(max(model.predict(np.reshape(x_test[i], (1, *image_size))))))
-    if y_test[i] != y_pred[i]:
-        incorrect.append(i)
 #SHOW INCORRENCT PREDICTIONS
 main.plotImage(data=x_test, incorrect = incorrect)
 
 from sklearn.metrics import confusion_matrix
-cm = confusion_matrix(y_test, y_pred)
+cm = confusion_matrix(y_test, predicted_classes)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
