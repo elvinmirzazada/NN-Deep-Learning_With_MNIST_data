@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow.keras.datasets.mnist as mnist
+import tensorflow as tf
 from generateNeuralNetworkModel import Model
 import math
 class Main:
@@ -45,16 +46,30 @@ class Main:
             plt.margins(x = 1, y=10)
         plt.show()
         
+    def testImage(self, imageName, classifier):
+        from keras.preprocessing import image
+
+        test_image = image.load_img(imageName, target_size = (28, 28))
+        gray_image = tf.image.rgb_to_grayscale(test_image, name=None)
+        
+        test_image = np.reshape(tf.Session().run(gray_image), (-1, 28,28, 1))
         
         
+        predicted_classes = classifier.predict(test_image)
         
+        print(np.argmax(predicted_classes))
+
+#Read Data        
 main = Main()
 (x_train, y_train),(x_test, y_test) = main.readData()
 
-main.trainTheModel(x_train, y_train, x_test, y_test)
+#Train the model and save it
+#main.trainTheModel(x_train, y_train, x_test, y_test)
 
+#Load the model
 model = Model().loadModel()
 
+#Predict 
 ev = model.evaluate(x_test, y_test)
 predicted_classes = model.predict(x_test)
 predicted_classes = np.argmax(np.round(predicted_classes),axis=1)
@@ -66,12 +81,8 @@ main.plotImage(data=x_test, incorrect = incorrect)
 from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, predicted_classes)
 
-
-
-
-
-
-
+#TEST IMAGE WITH MY PHOTO
+main.testImage('9.jpg', model)
 
 
 
